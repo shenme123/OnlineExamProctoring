@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Exam Report</title>
+
+  <!-- Chang URLs to wherever Video.js files will be hosted -->
+  <link href="js/video-js.css" rel="stylesheet" type="text/css">
+  <!-- video.js must be in the <head> for older IEs to work. -->
+  <script src="result.js"></script>
+  <script src="js/jquery.js"></script>
+  <script src="http://popcornjs.org/code/dist/popcorn-complete.js"></script>
+  <script src="js/timeline.js"></script>
+  <style>
+    #leftp {
+      float: left;
+      padding: 40px;
+    }
+    #rightp {
+      float: left;
+      padding: 40px
+    }
+  </style>
+  
+
+  <!-- Unless using the CDN hosted version, update the URL to the Flash SWF -->
+  <script>
+    //videojs.options.flash.swf = "js/video-js.swf";
+
+
+    var status_name = ["Normal", "Absent", "MultiplePerson", "NonGazeing", "TooFar", "WrongPerson", "TimeOut"];
+    var status_color = ["green", "red", "purple", "orange", "#CFF", "#FCC", "#CCC"];
+    var tolerence = 0;
+
+    var pop, duration, timeline;
+    $(document).ready(function(){
+      pop = Popcorn("#vision");
+      $("#vision").on("loadedmetadata", function(){
+        duration = this.duration;
+        timeline = new Timeline('vision','vision_timeline', duration, {width: $(this).width()});
+
+        var previous_status = 0, previous_length = 0;
+        for (var i = 0; i <= res_status.length; i++) {
+          if (i<res_status.length) {
+            pop.footnote({
+              start:i*res_interval,
+              end:(i+1)*res_interval,
+              target: "rightp",
+              text: $("<div>").append($("<h2>").html(status_name[res_status[i]])).append($("<img>").attr('src', 'frames/'+i+'_'+status_name[res_status[i]]+'.jpg')).prop('outerHTML')
+            });
+          }
+          if (res_status[i]==previous_status) {
+            previous_length++;
+          } else {
+            if (previous_length>=tolerence) {
+              timeline.addPeriod((i-previous_length)*res_interval, i*res_interval, status_color[previous_status], 1, status_name[previous_status]);
+
+            }
+            previous_status = res_status[i];
+            previous_length = 1;
+          }
+        }
+      });
+
+      $("#vision").on("timeupdate",function(e){
+
+      });
+
+
+    });
+  </script>
+
+
+</head>
+<body>
+  <div id='leftp'>
+    <video id="vision" controls width="640" height="480"
+        data-setup="{}">
+      <source src="output.mp4" type='video/mp4' />
+    </video>
+    <div id='vision_timeline'></div>
+  </div>
+  <div id='rightp'>
+    
+  </div>
+
+
+</body>
+</html>
